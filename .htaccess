@@ -1,0 +1,17 @@
+AddDefaultCharset utf-8
+RewriteEngine on
+Options All -Indexes
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php
+
+RewriteCond %{REQUEST_FILENAME}\.png -f
+RewriteRule ^(.*)$ $1.png
+
+RewriteCond %{REQUEST_FILENAME}\.pdf -f
+RewriteRule ^(.*)$ $1.pdf
+
+RewriteCond %{REQUEST_FILENAME}\.jpg -f
+RewriteRule ^(.*)$ $1.jpg
+
