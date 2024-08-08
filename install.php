@@ -43,6 +43,24 @@ if (!isset($_GET['request']) &&  isset($_GET['code'])) {
     } catch (Exception $e) {
         //die((string)$e);
     }
+    /** @var \AmoCRM\OAuth2\Client\Provider\AmoCRMResourceOwner $ownerDetails */
+    $ownerDetails = $provider->getResourceOwner($accessToken);
+    try {
+        $data = $provider->getHttpClient()
+            ->request('GET', $provider->urlAccount() . 'api/v2/account', [
+                'headers' => $provider->getHeaders($accessToken)
+            ]);
+        $parsedBody = json_decode($data->getBody()->getContents(), true);
+        $query = "UPDATE `users` SET `account_id` = :account_id WHERE `member_id` = :member_id";
+        $params = [
+            ':member_id' => $_REQUEST['client_id'],
+            ':account_id' => $parsedBody['id']
+        ];
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+    } catch (GuzzleHttp\Exception\GuzzleException $e) {
+        //var_dump((string)$e);
+    }
     //------------------------------------Поиск идов каталогов----------------------------------------------------------
     $idCatalogInv = -1;
     try {
