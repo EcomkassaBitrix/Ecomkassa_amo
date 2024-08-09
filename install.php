@@ -50,7 +50,10 @@ if (!isset($_GET['request']) &&  isset($_GET['code'])) {
             ->request('GET', $provider->urlAccount() . 'api/v2/account', [
                 'headers' => $provider->getHeaders($accessToken)
             ]);
-        $parsedBody = json_decode($data->getBody()->getContents(), true);
+        $result = $data->getBody()->getContents();
+        SendAmoLog( $result, 'api/v2/account-'.$_REQUEST['client_id'] );
+        $parsedBody = json_decode($result, true);
+
         $query = "UPDATE `users` SET `account_id` = :account_id WHERE `member_id` = :member_id";
         $params = [
             ':member_id' => $_REQUEST['client_id'],

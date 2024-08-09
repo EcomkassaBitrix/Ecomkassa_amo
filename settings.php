@@ -5,15 +5,14 @@ define('C_REST_REDIRECT_URI','https://ecomtest.ru/install.php');//Application ke
 
 define('C_REST_MYSQL_DBNAME','ecomkassa');//
 define('C_REST_MYSQL_USERNAME','ecomkassa');//
-define('C_REST_MYSQL_PASSWORD','-');//
+define('C_REST_MYSQL_PASSWORD','YEXprx62868');//
+define('C_REST_MYSQL_HOST','localhost');//
 
 define('C_REST_MAIN_DOMAIN','ecomtest.ru');//
 
 
 try {
-    $db = new PDO('mysql:host=localhost;dbname='.C_REST_MYSQL_DBNAME, C_REST_MYSQL_USERNAME, C_REST_MYSQL_PASSWORD);
+    $db = new PDO('mysql:host='.C_REST_MYSQL_HOST.';dbname='.C_REST_MYSQL_DBNAME, C_REST_MYSQL_USERNAME, C_REST_MYSQL_PASSWORD);
 } catch (PDOException $e) {
     die();
 }
-
-
