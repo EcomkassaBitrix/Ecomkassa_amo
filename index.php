@@ -146,11 +146,9 @@
                     'headers' => $provider->getHeaders($accessToken)
                 ]);
             $content = $data->getBody()->getContents();
-            if( !$content ){
-                echo(ShowErrorToPay( 'Catalog id incorrect | Неверный ид каталога' ));
-                exit;
+            if( $content ){
+                $saleProductGet = json_decode($content, true);
             }
-            $saleProductGet = json_decode($content, true);
         } catch (GuzzleHttp\Exception\GuzzleException $e) {
             //var_dump((string)$e);
             SendAmoLog( (string)$e, 'errorPay-userID'.$userData['id'] );
@@ -282,7 +280,7 @@
                 $valueItemPay['value']['unit_price'] = ceil($valueItemPay['value']['unit_price']) / 100;
             }
 
-            if( $valueItemPay['value']['vat_rate_value'] ){
+            if( $billVatType != 'vat_exempt' ){
                 //Налог включён
                 //значение 0.1, 0.2, 0, null - без НДС (none без ндс ) ---> null то что передаёт amo
                 $valueVat = "vat".$valueItemPay['value']['vat_rate_value'];

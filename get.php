@@ -22,7 +22,7 @@
         }
         else if( $updateParams->typeAction == 'updateSettings' ){
             $alertText = "Настройки обновлены";
-            if( !$updateParams->ecomLogin || !$updateParams->ecomPass || !$updateParams->ecomKassaId || !$updateParams->company_email || !$updateParams->company_sno || !$updateParams->vatShipment || (!$updateParams->vatOrder && $updateParams->vatOrderCheck == 1 ) || !$updateParams->company_inn || !$updateParams->company_payment_address
+            if( !$updateParams->ecomLogin || !$updateParams->ecomPass || !$updateParams->ecomKassaId || !$updateParams->company_email || !$updateParams->company_sno || !$updateParams->vatShipment || (! isset($updateParams->vatOrder) && $updateParams->vatOrderCheck == 1 ) || !$updateParams->company_inn || !$updateParams->company_payment_address
                 || !$updateParams->payment_method || !$updateParams->payment_object ){
                 $alertText = "Не все поля настроек заполнены";
             } else {
