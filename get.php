@@ -1,20 +1,6 @@
 <?php
     require_once (__DIR__.'/lib.php');
 
-function SendTg($chatid,$message){
-    $response = array(
-        'chat_id' => $chatid,
-        'text' => $message
-    );
-    $ch = curl_init('https://api.telegram.org/bot' . '1910445078:AAG6HuB58RtqRHvi_D89T8z_lGNR5sv9o5A' . '/sendMessage');
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $response);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HEADER, false);
-    curl_exec($ch);
-    curl_close($ch);
-}
-
 
     if( $_REQUEST['sendParam'] ){
 
@@ -91,7 +77,7 @@ function SendTg($chatid,$message){
         echo json_encode($test);
         exit;
     }
-//SendTg('383404884', json_encode($_REQUEST));
+
 
     $stmt = $db->prepare("SELECT * FROM users WHERE `ecomhash` = ? and `referer` = ? and `install` = ?");
     $stmt->execute([$_REQUEST['ecomhash'], $_REQUEST['domain'], 1]);
