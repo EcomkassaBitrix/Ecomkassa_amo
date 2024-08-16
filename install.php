@@ -22,7 +22,7 @@ if (isset($_GET['referer'])) {
     $provider->setBaseDomain($_GET['referer']);
 }
 
-if (!isset($_GET['request']) &&  isset($_GET['code'])) {
+if (!isset($_GET['request']) && isset($_GET['code'])) {
     /**
      * Ловим обратный код
      */
@@ -32,32 +32,29 @@ if (!isset($_GET['request']) &&  isset($_GET['code'])) {
             'code' => $_GET['code'],
         ]);
 
-        if (!$accessToken->hasExpired()) {
-            amoSaveToken( $_REQUEST['client_id'] ,[
-                'accessToken' => $accessToken->getToken(),
-                'refreshToken' => $accessToken->getRefreshToken(),
-                'expires' => $accessToken->getExpires(),
-                'baseDomain' => $provider->getBaseDomain(),
-            ]);
-        }
     } catch (Exception $e) {
         //die((string)$e);
     }
     /** @var \AmoCRM\OAuth2\Client\Provider\AmoCRMResourceOwner $ownerDetails */
-    $ownerDetails = $provider->getResourceOwner($accessToken);
     try {
         $data = $provider->getHttpClient()
             ->request('GET', $provider->urlAccount() . 'api/v2/account', [
                 'headers' => $provider->getHeaders($accessToken)
             ]);
         $result = $data->getBody()->getContents();
-        SendAmoLog( $result, 'api/v2/account-'.$_REQUEST['client_id'] );
         $parsedBody = json_decode($result, true);
-
-        $query = "UPDATE `users` SET `account_id` = :account_id WHERE `member_id` = :member_id";
+        if (!$accessToken->hasExpired()) {
+            amoSaveToken( $parsedBody['id'] , $parsedBody['current_user'],[
+                'accessToken' => $accessToken->getToken(),
+                'refreshToken' => $accessToken->getRefreshToken(),
+                'expires' => $accessToken->getExpires(),
+                'baseDomain' => $provider->getBaseDomain(),
+            ]);
+        }
+        $query = "UPDATE `users` SET `install` = :install WHERE `member_id` = :member_id";
         $params = [
-            ':member_id' => $_REQUEST['client_id'],
-            ':account_id' => $parsedBody['id']
+            ':member_id' => $parsedBody['id'],
+            ':install' => 0
         ];
         $stmt = $db->prepare($query);
         $stmt->execute($params);
@@ -74,8 +71,8 @@ if (!isset($_GET['request']) &&  isset($_GET['code'])) {
         $result = $data->getBody()->getContents();
 
         SendAmoLog( $result, 'api/v4/catalogs-ins-'.$_REQUEST['client_id'] );
-        $parsedBody = json_decode($result, true);
-        foreach ($parsedBody['_embedded']['catalogs'] as $value) {
+        $parsedBody2 = json_decode($result, true);
+        foreach ($parsedBody2['_embedded']['catalogs'] as $value) {
             if( $value['type'] == 'invoices' ){
                 $idCatalogInv = $value['id'];
             }
@@ -86,17 +83,23 @@ if (!isset($_GET['request']) &&  isset($_GET['code'])) {
     if( $idCatalogInv != -1 ){
         //Устанавливаем хуки
         try {
-            $dataw = array(
-                "destination" => "https://".C_REST_MAIN_DOMAIN."/webhook.php?code=".substr($_REQUEST['client_id'],0,8),
-                "settings" => [
-                    "add_catalog_".$idCatalogInv, "update_lead"
-                ]
-            );
-            $data = $provider->getHttpClient()
-                ->request('POST', $provider->urlAccount() . 'api/v4/webhooks', [
-                    'headers' => $provider->getHeaders($accessToken),
-                    'form_params' => $dataw
-                ]);
+            $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
+            $stmt->execute([$parsedBody['id']]);
+            $userData = $stmt->fetch(PDO::FETCH_LAZY);
+            if($userData['id']){
+                $dataw = array(
+                    "destination" => "https://".C_REST_MAIN_DOMAIN."/webhook.php?code=".substr($userData['secret_code'],0,8),
+                    "settings" => [
+                        "add_catalog_".$idCatalogInv, "update_lead"
+                    ]
+                );
+                $data = $provider->getHttpClient()
+                    ->request('POST', $provider->urlAccount() . 'api/v4/webhooks', [
+                        'headers' => $provider->getHeaders($accessToken),
+                        'form_params' => $dataw
+                    ]);
+            }
+
         } catch (GuzzleHttp\Exception\GuzzleException $e) {
             //var_dump((string)$e);
         }

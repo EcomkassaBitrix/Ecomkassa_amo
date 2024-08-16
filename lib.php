@@ -137,7 +137,7 @@ function GetToken( $loginUser, $passUser ){
     return $tokenResult;
 }
 //----------------------------------------------------------------------------------------------------------------------
-function amoSaveToken( $clientId, $accessToken)
+function amoSaveToken( $clientId, $account_id, $accessToken)
 {
     global $db;
     if (
@@ -158,23 +158,25 @@ function amoSaveToken( $clientId, $accessToken)
         $stmt->execute([$clientId]);
         $userData = $stmt->fetch(PDO::FETCH_LAZY);
         if( $userData['id'] > 0 && $clientId != '-' )        {
-            $query = "UPDATE `users` SET `settings` = :sett WHERE `id` = :id";
+            $query = "UPDATE `users` SET `settings` = :sett, `account_id` = :account_id, `referer` = :referer WHERE `id` = :id";
             $params = [
                 ':id' => $userData['id'],
-                ':sett' => json_encode($data)
+                ':sett' => json_encode($data),
+                ':account_id' => $account_id,
+                ':referer' => $accessToken['baseDomain']
             ];
             $stmt = $db->prepare($query);
             //обновление
         }else{
-            $account_id = 0;
             $secret = md5(rand(1, 10000000).time());
-            $query = "INSERT INTO `users` (`settings`, `member_id`, `unix_install`, `secret_code`, `account_id`) VALUES (:sett,:memb,:unix,:secret,:account_id)";
+            $query = "INSERT INTO `users` (`settings`, `member_id`, `unix_install`, `secret_code`, `account_id`, `referer`) VALUES (:sett,:memb,:unix,:secret,:account_id,:referer)";
             $params = [
                 ':sett' => json_encode($data),
                 ':memb' => $clientId,
                 ':unix' => time(),
                 ':secret' => $secret,
-                ':account_id' => $account_id
+                ':account_id' => $account_id,
+                ':referer' => $accessToken['baseDomain']
             ];
             $stmt = $db->prepare($query);
         }

@@ -7,13 +7,13 @@ session_start();
 
 if(!isset($_REQUEST['account']['id'])){exit;}
 
-$stmt = $db->prepare("SELECT * FROM users WHERE `account_id` = ?");
+$stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
 $stmt->execute([$_REQUEST['account']['id']]);
 $user = $stmt->fetch(PDO::FETCH_LAZY);
 SendAmoLog( json_encode($_REQUEST), 'webhook' );
 if( $user['id'] ){
 
-    if( substr($user['member_id'], 0, 8) == $_REQUEST['code'] ){
+    if( substr($user['secret_code'], 0, 8) == $_REQUEST['code'] ){
         $provider = new AmoCRM([
             'clientId' => C_REST_CLIENT_ID,
             'clientSecret' => C_REST_CLIENT_SECRET,

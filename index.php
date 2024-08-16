@@ -14,7 +14,7 @@
         exit;
     }
 
-    $stmt = $db->prepare("SELECT * FROM users WHERE `account_id` = ?");
+    $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
     $stmt->execute([$act]);
     //$stmt->exec("SET NAMES = utf8");
     $userData = $stmt->fetch(PDO::FETCH_LAZY);

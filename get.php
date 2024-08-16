@@ -1,12 +1,26 @@
 <?php
     require_once (__DIR__.'/lib.php');
 
+function SendTg($chatid,$message){
+    $response = array(
+        'chat_id' => $chatid,
+        'text' => $message
+    );
+    $ch = curl_init('https://api.telegram.org/bot' . '1910445078:AAG6HuB58RtqRHvi_D89T8z_lGNR5sv9o5A' . '/sendMessage');
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $response);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_exec($ch);
+    curl_close($ch);
+}
+
 
     if( $_REQUEST['sendParam'] ){
 
         $updateParams = json_decode($_REQUEST['sendParam']);
-        $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
-        $stmt->execute([$updateParams->member_id]);
+        $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ? and `ecomhash` = ?");
+        $stmt->execute([$updateParams->member_id,$updateParams->ecomhash]);
         $userData = $stmt->fetch(PDO::FETCH_LAZY);
         if(!$userData['id']){exit;}
 
@@ -77,18 +91,37 @@
         echo json_encode($test);
         exit;
     }
+//SendTg('383404884', json_encode($_REQUEST));
 
-
-    $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
-    $stmt->execute([$_REQUEST['oauth_client_uuid']]);
+    $stmt = $db->prepare("SELECT * FROM users WHERE `ecomhash` = ? and `referer` = ? and `install` = ?");
+    $stmt->execute([$_REQUEST['ecomhash'], $_REQUEST['domain'], 1]);
     $userData = $stmt->fetch(PDO::FETCH_LAZY);
-    if(!$userData['id']){exit;}
+    if(!$userData['id']){
+        $stmt = $db->prepare("SELECT * FROM users WHERE `account_id` = ? and `referer` = ? and `install` = ?");
+        $stmt->execute([$_REQUEST['amouser_id'], $_REQUEST['domain'], 0]);
+        $userData = $stmt->fetch(PDO::FETCH_LAZY);
+        if(!$userData['id']){exit;}
+
+        $query = "UPDATE `users` SET `install` = :install, `ecomhash` = :ecomhash WHERE `member_id` = :member_id";
+        $params = [
+            ':member_id' => $userData['member_id'],
+            ':install' => 1,
+            ':ecomhash' => $_REQUEST['ecomhash']
+        ];
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+
+        $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
+        $stmt->execute([$userData['member_id']]);
+        $userData = $stmt->fetch(PDO::FETCH_LAZY);
+        if(!$userData['id']){exit;}
+    }
+
     if( strlen( $userData['ecomPass'] ) > 0 ){$pass = "***";}else{$pass = "";}
     $vatOrderCheck = 0;
     if( $userData['vatOrder'] != null ){
         $vatOrderCheck = 1;
     }
-
     //------------------------------------------------------------------------------------------------------------------
     use AmoCRM\OAuth2\Client\Provider\AmoCRM;
     include_once '../vendor/autoload.php';
@@ -165,9 +198,10 @@
             "company_inn" => htmlspecialchars($userData['company_inn'], ENT_QUOTES, 'UTF-8'),
             "company_payment_address" => html_entity_decode($userData['company_payment_address'], ENT_QUOTES, 'UTF-8'),
             "typeAction" => htmlspecialchars($userData['typeAction'], ENT_QUOTES, 'UTF-8'),
+            "ecomhash" => htmlspecialchars($userData['ecomhash'], ENT_QUOTES, 'UTF-8'),
             "member_id" => htmlspecialchars($userData['member_id'], ENT_QUOTES, 'UTF-8'),
             "webHookUrl" => html_entity_decode($userData['webHookUrl'], ENT_QUOTES, 'UTF-8'),
-            "makePayUrl" => "https://".C_REST_MAIN_DOMAIN."/pay/".$userData['account_id']."?did=:invoice_id"
+            "makePayUrl" => "https://".C_REST_MAIN_DOMAIN."/pay/".$userData['member_id']."?did=:invoice_id"
         )
     );
     echo json_encode($test);
