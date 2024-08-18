@@ -1,12 +1,17 @@
 <?php
     require_once (__DIR__.'/lib.php');
 
-
     if( $_REQUEST['sendParam'] ){
 
         $updateParams = json_decode($_REQUEST['sendParam']);
-        $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ? and `ecomhash` = ?");
-        $stmt->execute([$updateParams->member_id,$updateParams->ecomhash]);
+
+        if($updateParams->ecomhash){
+            $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ? and `ecomhash` = ?");
+            $stmt->execute([$updateParams->member_id, $updateParams->ecomhash]);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
+            $stmt->execute([$updateParams->member_id]);
+        }
         $userData = $stmt->fetch(PDO::FETCH_LAZY);
         if(!$userData['id']){exit;}
 
@@ -79,8 +84,8 @@
     }
 
 
-    $stmt = $db->prepare("SELECT * FROM users WHERE `ecomhash` = ? and `referer` = ? and `install` = ?");
-    $stmt->execute([$_REQUEST['ecomhash'], $_REQUEST['domain'], 1]);
+    $stmt = $db->prepare("SELECT * FROM users WHERE (`ecomhash` = ? and `referer` = ? and `install` = ?) or (`account_id` = ? and `referer` = ? and `install` = ?)");
+    $stmt->execute([$_REQUEST['ecomhash'], $_REQUEST['domain'], 1, $_REQUEST['amouser_id'], $_REQUEST['domain'], 1]);
     $userData = $stmt->fetch(PDO::FETCH_LAZY);
     if(!$userData['id']){
         $stmt = $db->prepare("SELECT * FROM users WHERE `account_id` = ? and `referer` = ? and `install` = ?");
@@ -102,7 +107,6 @@
         $userData = $stmt->fetch(PDO::FETCH_LAZY);
         if(!$userData['id']){exit;}
     }
-
     if( strlen( $userData['ecomPass'] ) > 0 ){$pass = "***";}else{$pass = "";}
     $vatOrderCheck = 0;
     if( $userData['vatOrder'] != null ){
@@ -129,7 +133,7 @@
             $accessToken = $provider->getAccessToken(new League\OAuth2\Client\Grant\RefreshToken(), [
                 'refresh_token' => $accessToken->getRefreshToken(),
             ]);
-            amoSaveToken( $userData['member_id'] , [
+            amoSaveToken( $userData['member_id'], $userData['account_id'] , [
                 'accessToken' => $accessToken->getToken(),
                 'refreshToken' => $accessToken->getRefreshToken(),
                 'expires' => $accessToken->getExpires(),

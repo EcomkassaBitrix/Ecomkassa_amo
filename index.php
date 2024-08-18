@@ -65,7 +65,7 @@
             $accessToken = $provider->getAccessToken(new League\OAuth2\Client\Grant\RefreshToken(), [
                 'refresh_token' => $accessToken->getRefreshToken(),
             ]);
-            amoSaveToken( $userData['member_id'] , [
+            amoSaveToken( $userData['member_id'], $userData['account_id'] , [
                 'accessToken' => $accessToken->getToken(),
                 'refreshToken' => $accessToken->getRefreshToken(),
                 'expires' => $accessToken->getExpires(),
