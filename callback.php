@@ -75,7 +75,7 @@
                         ]
                     ]
                 );
-                if( $bill['permalink'] != null ){
+                /*if( $bill['permalink'] != null ){
                     array_push($dataw['custom_fields_values'],  [
                         "field_code"=> "URL_ECOM_KASSA",
                         "values"=> [
@@ -84,7 +84,7 @@
                             ]
                         ]
                     ]);
-                }
+                }*/
                 try {
                     $data = $provider->getHttpClient()
                         ->request('PATCH', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/elements/'.$bill['PAYMENT_ID'], [
