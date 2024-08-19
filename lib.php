@@ -50,7 +50,7 @@ function ShowErrorToPay( $errorText ){
     return '<meta http-equiv="refresh" content="1; url=/webpay.php?error='.urlencode($errorText).'">';
 }
 //----------------------------------------------------------------------------------------------------------------------
-function GetPayUrl( $token, $kassaid, $paymentsType, $email, $totalSumm, $arrayItems, $companyArray, $externalId, $secret ){
+function GetPayUrl( $token, $kassaid, $paymentsType, $email, $totalSumm, $arrayItems, $companyArray, $externalId, $secret, $successurl ){
     $arrayTypePay = -1;
     $kassaid = str_replace(' ', "", $kassaid);
     $companyArray['inn'] = str_replace(' ', "", $companyArray['inn']);
@@ -75,11 +75,19 @@ function GetPayUrl( $token, $kassaid, $paymentsType, $email, $totalSumm, $arrayI
                 ],
                 "total" => (float)$totalSumm
             ],
-            "service" => [
-                "callback_url" => "https://".C_REST_MAIN_DOMAIN."/callback.php?secret=$secret&externalId=$externalId"
-            ],
+            "service" => [],
             "timestamp" => date('d.m.y H:i:s')
         ];
+        if( $successurl ){
+            $jayParsedAry["service"] = [
+                "callback_url" => "https://".C_REST_MAIN_DOMAIN."/callback.php?secret=$secret&externalId=$externalId",
+                "success_url" => $successurl
+            ];
+        } else {
+            $jayParsedAry["service"] = [
+                "callback_url" => "https://".C_REST_MAIN_DOMAIN."/callback.php?secret=$secret&externalId=$externalId"
+            ];
+        }
         SendLog(json_encode($jayParsedAry));
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode( $jayParsedAry ));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

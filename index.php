@@ -13,7 +13,6 @@
         echo(ShowErrorToPay( 'Invoice not found | Не передан ид счёта' ));
         exit;
     }
-
     $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
     $stmt->execute([$act]);
     //$stmt->exec("SET NAMES = utf8");
@@ -109,9 +108,10 @@
         exit;
     }
     //----------------------------------------------Содержимое инвойса--------------------------------------------------
+    $successurl = "";
     try {
         $data = $provider->getHttpClient()
-            ->request('GET', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/elements/'.$_REQUEST['did'], [
+            ->request('GET', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/elements/'.$_REQUEST['did'].'?with=invoice_link', [
                 'headers' => $provider->getHeaders($accessToken)
             ]);
         $content = $data->getBody()->getContents();
@@ -120,6 +120,9 @@
             exit;
         }
         $saleOrderGet = json_decode($content, true);
+        if( isset($saleOrderGet['invoice_link']) && $saleOrderGet['invoice_link'] ){
+            $successurl = $saleOrderGet['invoice_link'];
+        }
     } catch (GuzzleHttp\Exception\GuzzleException $e) {
         //var_dump((string)$e);
         SendAmoLog( (string)$e, 'errorPay-userID'.$userData['id'] );
@@ -310,7 +313,11 @@
     //-------------------------------------------Перевыпуск просроченного токена--------------------------------------------
     $externalId = format_uuidv4(random_bytes(16));
     $secret = md5( rand(1,10000000) );
-    $urlPay = GetPayUrl( $tokenEcom, $kassaid, $paySystemIdPay, $emailCheckDef, $totalPaySum, $arrayItems, $companyArray, $externalId, $secret );
+    if( $totalPaySum <= 0 ){
+        echo(ShowErrorToPay( 'Summ invalid | Сумма оплаты не валидная обратитесь к магазину' ));
+        exit;
+    }
+    $urlPay = GetPayUrl( $tokenEcom, $kassaid, $paySystemIdPay, $emailCheckDef, $totalPaySum, $arrayItems, $companyArray, $externalId, $secret, $successurl );
     //----------------------------------------------------------------------------------------------------------------------
     if( isset( $urlPay->code )  ){
         echo(ShowErrorToPay( $urlPay->code.' '. $urlPay->text ));
