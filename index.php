@@ -317,7 +317,7 @@
         echo(ShowErrorToPay( 'Summ invalid | Сумма оплаты не валидная обратитесь к магазину' ));
         exit;
     }
-    $urlPay = GetPayUrl( $tokenEcom, $kassaid, $paySystemIdPay, $emailCheckDef, $totalPaySum, $arrayItems, $companyArray, $externalId, $secret, $successurl );
+    $urlPay = GetPayUrl( $tokenEcom, $kassaid, $paySystemIdPay, $emailCheckDef, $totalPaySum, $arrayItems, $companyArray, $externalId, $secret, "https://".C_REST_MAIN_DOMAIN."/wait.php?did=".$_REQUEST['did']."&mem=".$userData['member_id'] );
     //----------------------------------------------------------------------------------------------------------------------
     if( isset( $urlPay->code )  ){
         echo(ShowErrorToPay( $urlPay->code.' '. $urlPay->text ));
@@ -341,7 +341,7 @@
             ':secret' => $secret,
             ':PAYMENT_ID' => $_REQUEST['did'],
             ':PAYSYSTEM_ID' => $paySystemIdPay,
-            ':RETURN_URL' => '',
+            ':RETURN_URL' => $successurl,
             ':permalink' => $permaLink
         ];
         $stmt = $db->prepare($query);
