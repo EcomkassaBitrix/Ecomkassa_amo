@@ -52,6 +52,8 @@ function ShowErrorToPay( $errorText ){
 //----------------------------------------------------------------------------------------------------------------------
 function GetPayUrl( $token, $kassaid, $paymentsType, $email, $totalSumm, $arrayItems, $companyArray, $externalId, $secret ){
     $arrayTypePay = -1;
+    $kassaid = str_replace(' ', "", $kassaid);
+    $companyArray['inn'] = str_replace(' ', "", $companyArray['inn']);
     $paramurl = "https://app.ecomkassa.ru/fiscalorder/v2/$kassaid/sell?token=$token";
     if ($curl = curl_init()) {
         curl_setopt($curl, CURLOPT_URL,$paramurl);
