@@ -9,8 +9,8 @@
             $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ? and `ecomhash` = ?");
             $stmt->execute([$updateParams->member_id, $updateParams->ecomhash]);
         } else {
-            $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ?");
-            $stmt->execute([$updateParams->member_id]);
+            $stmt = $db->prepare("SELECT * FROM users WHERE `member_id` = ? and (`ecomhash` = ? or `ecomhash` is NULL)");
+            $stmt->execute([$updateParams->member_id,'']);
         }
         $userData = $stmt->fetch(PDO::FETCH_LAZY);
         if(!$userData['id']){exit;}
@@ -84,8 +84,8 @@
     }
 
 
-    $stmt = $db->prepare("SELECT * FROM users WHERE (`ecomhash` = ? and `referer` = ? and `install` = ?) or (`account_id` = ? and `referer` = ? and `install` = ?)");
-    $stmt->execute([$_REQUEST['ecomhash'], $_REQUEST['domain'], 1, $_REQUEST['amouser_id'], $_REQUEST['domain'], 1]);
+    $stmt = $db->prepare("SELECT * FROM users WHERE (`ecomhash` = ? and `referer` = ? and `install` = ?) or (`account_id` = ? and `referer` = ? and `install` = ? and (`ecomhash` = ? or `ecomhash` is NULL))");
+    $stmt->execute([$_REQUEST['ecomhash'], $_REQUEST['domain'], 1, $_REQUEST['amouser_id'], $_REQUEST['domain'], 1,'']);
     $userData = $stmt->fetch(PDO::FETCH_LAZY);
     if(!$userData['id']){
         $stmt = $db->prepare("SELECT * FROM users WHERE `account_id` = ? and `referer` = ? and `install` = ?");
