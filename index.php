@@ -100,7 +100,7 @@
     } catch (GuzzleHttp\Exception\GuzzleException $e) {
         //var_dump((string)$e);
         SendAmoLog( (string)$e, 'errorPay-userID'.$userData['id'] );
-        echo(ShowErrorToPay( 'Undefined error | Неизвестная ошибка' ));
+        echo(ShowErrorToPay( 'Invoice not found, contact the seller<br>Счёт не найден, пожалуйста обратитесь к продавцу,<br> который выставил вам счёт' ));
         exit;
     }
     if( $idCatalogInv == -1 ){
