@@ -8,8 +8,8 @@
         exit;
     }
 
-    $stmt = $db->prepare("SELECT * FROM bills WHERE `external_id` = ? and `secret` = ?");
-    $stmt->execute([$_REQUEST['externalId'],$_REQUEST['secret']]);
+    $stmt = $db->prepare("SELECT * FROM bills WHERE `external_id` = ? and `secret` = ? and `status` = ?");
+    $stmt->execute([$_REQUEST['externalId'],$_REQUEST['secret'], 'paid']);
     $bill = $stmt->fetch(PDO::FETCH_LAZY);
     if( $bill['id'] > 0 )
     {
@@ -62,29 +62,31 @@
             }
             //-----------------------------------Отметить счёт оплаченным-----------------------------------------------
             if( $idCatalogInv != -1 ){
-                $dataw = array(
-                    "name" => "",
-                    "custom_fields_values" => [
-                        [
-                            "field_code"=> "BILL_STATUS",
-                            "values"=> [
-                                [
-                                    "enum_code" => "paid"
+                if( $user['defStatusAfter'] != 'none' ){
+                    $dataw = array(
+                        "name" => "",
+                        "custom_fields_values" => [
+                            [
+                                "field_code"=> "BILL_STATUS",
+                                "values"=> [
+                                    [
+                                        "enum_code" => $user['defStatusAfter']
+                                    ]
                                 ]
                             ]
                         ]
-                    ]
-                );
-                try {
-                    $data = $provider->getHttpClient()
-                        ->request('PATCH', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/elements/'.$bill['PAYMENT_ID'], [
-                            'headers' => $provider->getHeaders($accessToken),
-                            'form_params' => $dataw
-                        ]);
-                    SendAmoLog( $data->getBody()->getContents(), 'api/v4/catalogs/userID-'.$user['id'] );
-                } catch (GuzzleHttp\Exception\GuzzleException $e) {
-                    //var_dump((string)$e);
-                    SendAmoLog( (string)$e, 'api/v4/catalogs/userID-'.$user['id'] );
+                    );
+                    try {
+                        $data = $provider->getHttpClient()
+                            ->request('PATCH', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/elements/'.$bill['PAYMENT_ID'], [
+                                'headers' => $provider->getHeaders($accessToken),
+                                'form_params' => $dataw
+                            ]);
+                        SendAmoLog( $data->getBody()->getContents(), 'api/v4/catalogs/userID-'.$user['id'] );
+                    } catch (GuzzleHttp\Exception\GuzzleException $e) {
+                        //var_dump((string)$e);
+                        SendAmoLog( (string)$e, 'api/v4/catalogs/userID-'.$user['id'] );
+                    }
                 }
                 //------------------------------------------------------------------------------------------------------
                 if( $bill['permalink'] != null ) {
