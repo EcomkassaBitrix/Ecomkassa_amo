@@ -8,7 +8,7 @@
         exit;
     }
 
-    $stmt = $db->prepare("SELECT * FROM bills WHERE `external_id` = ? and `secret` = ? and `status` = ?");
+    $stmt = $db->prepare("SELECT * FROM bills WHERE `external_id` = ? and `secret` = ? and `status` != ?");
     $stmt->execute([$_REQUEST['externalId'],$_REQUEST['secret'], 'paid']);
     $bill = $stmt->fetch(PDO::FETCH_LAZY);
     if( $bill['id'] > 0 )

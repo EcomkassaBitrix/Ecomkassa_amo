@@ -27,7 +27,7 @@
         }
         else if( $updateParams->typeAction == 'updateSettings' ){
             $alertText = "Настройки обновлены";
-            if( !$updateParams->ecomLogin || !$updateParams->ecomPass || !$updateParams->ecomKassaId || !$updateParams->company_email || !$updateParams->company_sno || !$updateParams->defStatusAfter || !$updateParams->vatShipment || (! isset($updateParams->vatOrder) && $updateParams->vatOrderCheck == 1 ) || !$updateParams->company_inn || !$updateParams->company_payment_address
+            if( !$updateParams->ecomLogin || !$updateParams->ecomPass || !$updateParams->ecomKassaId || !$updateParams->company_email || !$updateParams->company_sno /*|| !$updateParams->defStatusAfter*/ || !$updateParams->vatShipment || (! isset($updateParams->vatOrder) && $updateParams->vatOrderCheck == 1 ) || !$updateParams->company_inn || !$updateParams->company_payment_address
                 || !$updateParams->payment_method || !$updateParams->payment_object ){
                 $alertText = "Не все поля настроек заполнены";
             } else {
@@ -53,7 +53,8 @@
                     if( $updateParams->vatOrderCheck ){
                         $vatOrder = $updateParams->vatOrder;
                     }
-                    $query = "UPDATE `users` SET `defPipeline` = :defPipeline, `defStatus` = :defStatus, `ecomLogin` = :ecomLogin, `ecomPass` = :ecomPass, `ecomKassaId` = :ecomKassaId, `emailDefCheck` = :emailDefCheck, `company_email` = :company_email, `company_sno` = :company_sno, `defStatusAfter` = :defStatusAfter, `company_inn` = :company_inn, `company_payment_address` = :company_payment_address, `vatShipment` = :vatShipment, `vatOrder` = :vatOrder, `vat100` = :vat100, `payment_method` = :payment_method, `payment_object` = :payment_object WHERE `id` = :id";
+                    //$query = "UPDATE `users` SET `defPipeline` = :defPipeline, `defStatus` = :defStatus, `ecomLogin` = :ecomLogin, `ecomPass` = :ecomPass, `ecomKassaId` = :ecomKassaId, `emailDefCheck` = :emailDefCheck, `company_email` = :company_email, `company_sno` = :company_sno, `defStatusAfter` = :defStatusAfter, `company_inn` = :company_inn, `company_payment_address` = :company_payment_address, `vatShipment` = :vatShipment, `vatOrder` = :vatOrder, `vat100` = :vat100, `payment_method` = :payment_method, `payment_object` = :payment_object WHERE `id` = :id";
+                    $query = "UPDATE `users` SET `defPipeline` = :defPipeline, `defStatus` = :defStatus, `ecomLogin` = :ecomLogin, `ecomPass` = :ecomPass, `ecomKassaId` = :ecomKassaId, `emailDefCheck` = :emailDefCheck, `company_email` = :company_email, `company_sno` = :company_sno, `company_inn` = :company_inn, `company_payment_address` = :company_payment_address, `vatShipment` = :vatShipment, `vatOrder` = :vatOrder, `vat100` = :vat100, `payment_method` = :payment_method, `payment_object` = :payment_object WHERE `id` = :id";
                     $params = [
                         ':defPipeline' => $updateParams->defPipeline,
                         ':defStatus' => $updateParams->defStatus,
@@ -65,7 +66,7 @@
                         //О компании
                         ':company_email' => $updateParams->company_email,
                         ':company_sno' => $updateParams->company_sno,
-                        ':defStatusAfter' => $updateParams->defStatusAfter,
+                        //':defStatusAfter' => $updateParams->defStatusAfter,
                         ':vatShipment' => $updateParams->vatShipment,
                         ':vatOrder' => $vatOrder,
                         ':company_inn' => $updateParams->company_inn,
