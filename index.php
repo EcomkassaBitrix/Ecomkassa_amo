@@ -312,6 +312,7 @@
     }
     //-------------------------------------------Перевыпуск просроченного токена--------------------------------------------
     $externalId = format_uuidv4(random_bytes(16));
+    $externalId = "amo_".substr($externalId,4);
     $secret = md5( rand(1,10000000) );
     if( $totalPaySum <= 0 ){
         echo(ShowErrorToPay( 'Summ invalid | Сумма оплаты не валидная обратитесь к магазину' ));
