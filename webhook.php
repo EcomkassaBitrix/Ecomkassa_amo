@@ -77,7 +77,7 @@ if( $user['id'] ){
                 curl_close($curl);
             }
         }
-        if( isset($_REQUEST['leads']['update']) && $user['defPipeline'] > 0 ){
+        if( isset($_REQUEST['leads']['update']) /*&& $user['defPipeline'] > 0*/ ){
             $filterSearch = "";
             $i = 0;
             foreach ($_REQUEST['leads']['update'] as $lead) {
@@ -119,6 +119,30 @@ if( $user['id'] ){
                         $stmt->execute([$user['member_id'],$link['to_entity_id']]);
                         $linkDealPayment = $stmt->fetch(PDO::FETCH_LAZY);
                         if( !$linkDealPayment['id'] ){
+                            //-------------------------------Обновление ссылки на оплату в самой сделке-----------------
+                            $dataLink = array(
+                                "name" => "",
+                                "custom_fields_values" => [
+                                    [
+                                        "field_code"=> "URL_LEAD_ECOM_KASSA",
+                                        "values"=> [
+                                            [
+                                                "value" => "https://".C_REST_MAIN_DOMAIN."/pay/".$_REQUEST['account']['id']."?did=".$link['to_entity_id']
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            );
+                            try {
+                                $data = $provider->getHttpClient()
+                                    ->request('PATCH', $provider->urlAccount() . 'api/v4/leads/'.$link['entity_id'], [
+                                        'headers' => $provider->getHeaders($accessToken),
+                                        'form_params' => $dataLink
+                                    ]);
+                            } catch (GuzzleHttp\Exception\GuzzleException $e) {
+                                //
+                            }
+                            //------------------------------------------------------------------------------------------
                             $query = "INSERT INTO `linkDealPayment`(`member_id`, `dealid`, `PAYMENT_ID`) VALUES (:member_id,:dealid,:PAYMENT_ID)";
                             $params = [
                                 ':dealid' => $link['entity_id'],

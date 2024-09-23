@@ -132,13 +132,32 @@
     //-------------------------------------------Содержимое списка товаров согласно инвойсу-----------------------------
     $arrayProductsId = "";
     $idProductInt = 0;
-
     foreach ($saleOrderGet['custom_fields_values'] as $value) {
         if( $value['field_type'] == 'items' ){
             $saleItemsGet = $value['values'];
             foreach ($value['values'] as $valueOrder) {
                 $arrayProductsId = $arrayProductsId.'filter[id]['.$idProductInt.']='.$valueOrder['value']['product_id'].'&';
                 $idProductInt++;
+            }
+        }
+        if( $value['field_name'] == "Система налогооблажения" ){
+            if( $value['values'][0]['value'] == "общая СН" ){
+                $companyArray['sno'] = "osn";
+            }
+            if( $value['values'][0]['value'] == "упрощенная СН (доходы)" ){
+                $companyArray['sno'] = "usn_income";
+            }
+            if( $value['values'][0]['value'] == "упрощенная СН(доходы минус расходы)" ){
+                $companyArray['sno'] = "usn_income_outcome";
+            }
+            if( $value['values'][0]['value'] == "единый налог на вмененный доход" ){
+                $companyArray['sno'] = "envd";
+            }
+            if( $value['values'][0]['value'] == "единый сельскохозяйственный налог" ){
+                $companyArray['sno'] = "esn";
+            }
+            if( $value['values'][0]['value'] == "патентная СН" ){
+                $companyArray['sno'] = "patent";
             }
         }
     }

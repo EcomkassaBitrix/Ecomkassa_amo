@@ -21,7 +21,6 @@ if (!isset($_REQUEST['client_id'])) {
 if (isset($_GET['referer'])) {
     $provider->setBaseDomain($_GET['referer']);
 }
-
 if (!isset($_GET['request']) && isset($_GET['code'])) {
     /**
      * Ловим обратный код
@@ -63,22 +62,118 @@ if (!isset($_GET['request']) && isset($_GET['code'])) {
     }
     //------------------------------------Поиск идов каталогов----------------------------------------------------------
     $idCatalogInv = -1;
+    $idCatalogProd = -1;
     try {
         $data = $provider->getHttpClient()
             ->request('GET', $provider->urlAccount() . 'api/v4/catalogs', [
                 'headers' => $provider->getHeaders($accessToken)
             ]);
         $result = $data->getBody()->getContents();
-
         SendAmoLog( $result, 'api/v4/catalogs-ins-'.$_REQUEST['client_id'] );
         $parsedBody2 = json_decode($result, true);
         foreach ($parsedBody2['_embedded']['catalogs'] as $value) {
             if( $value['type'] == 'invoices' ){
                 $idCatalogInv = $value['id'];
             }
+            else if( $value['type'] == 'products' ){
+                $idCatalogProd = $value['id'];
+            }
         }
     } catch (GuzzleHttp\Exception\GuzzleException $e) {
         //var_dump((string)$e);
+    }
+    try {
+        $dataw = array(
+            "name"=> "Ссылка на оплату Ecom",
+            "type"=> "url",
+            "code"=> "URL_LEAD_ECOM_KASSA"
+        );
+        $data = $provider->getHttpClient()
+            ->request('POST', $provider->urlAccount() . 'api/v4/leads/custom_fields', [
+                'headers' => $provider->getHeaders($accessToken),
+                'form_params' => $dataw
+            ]);
+    } catch (GuzzleHttp\Exception\GuzzleException $e) {
+        //var_dump((string)$e);
+    }
+    if( $idCatalogProd != -1 ){
+        $findPriznakSposob = false;
+        $findPriznakTowara = false;
+        try {
+            $data = $provider->getHttpClient()
+                ->request('GET', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogProd.'/custom_fields', [
+                    'headers' => $provider->getHeaders($accessToken)
+                ]);
+            $parsedBody = json_decode($data->getBody()->getContents(), true);
+            foreach ($parsedBody['_embedded']['custom_fields'] as $value) {
+                if( $value['name'] == 'Признак способа расчета' ){
+                    $findPriznakSposob = true;
+                }
+                else if( $value['name'] == 'Признак товара' ){
+                    $findPriznakTowara = true;
+                }
+            }
+        } catch (GuzzleHttp\Exception\GuzzleException $e) {
+            //var_dump((string)$e);
+        }
+        if( $findPriznakSposob == false ){
+            try {
+                $dataw = array(
+                    "name" => "Признак способа расчета",
+                    "type" => "select",
+                    "code" => "PRZ_TYPE_ECOM_KASSA",
+                    "sort" => "500",
+                    "enums"=> [
+                        ["value"=> "полный расчет"],
+                        ["value"=> "предоплата 100% - полная предварительная оплата, которая осуществляется клиентом до получения товара/оказания услуги"],
+                        ["value"=> "предоплата - частичная предварительная оплата, которая осуществляется клиентом до получения товара/оказания услуги"],
+                        ["value"=> "аванс - предоплата в случаях, когда заранее нельзя определить перечень товаров/работ/услуг"],
+                        ["value"=> "частичный расчет и кредит"],
+                        ["value"=> "передача в кредит"],
+                        ["value"=> "оплата кредита"]
+                    ]
+                );
+                $data = $provider->getHttpClient()
+                    ->request('POST', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogProd.'/custom_fields', [
+                        'headers' => $provider->getHeaders($accessToken),
+                        'form_params' => $dataw
+                    ]);
+            } catch (GuzzleHttp\Exception\GuzzleException $e) {
+                //var_dump((string)$e);
+            }
+        }
+        if( $findPriznakTowara == false ){
+            try {
+                $dataw = array(
+                    "name" => "Признак товара",
+                    "type" => "select",
+                    "code" => "PRZ_TOWARA_ECOM_KASSA",
+                    "sort" => "500",
+                    "enums"=> [
+                        ["value"=> "товар"],
+                        ["value"=> "подакцизный товар"],
+                        ["value"=> "работа"],
+                        ["value"=> "услуга"],
+                        ["value"=> "ставка азартной игры"],
+                        ["value"=> "выигрыш азартной игры"],
+                        ["value"=> "лотерейный билет"],
+                        ["value"=> "выигрыш лотереи"],
+                        ["value"=> "предоставление результатов интеллектуальной деятельности"],
+                        ["value"=> "платеж"],
+                        ["value"=> "агентское вознаграждение"],
+                        ["value"=> "составной предмет расчета"],
+                        ["value"=> "иной предмет расчета"]
+                    ]
+                );
+                $data = $provider->getHttpClient()
+                    ->request('POST', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogProd.'/custom_fields', [
+                        'headers' => $provider->getHeaders($accessToken),
+                        'form_params' => $dataw
+                    ]);
+            } catch (GuzzleHttp\Exception\GuzzleException $e) {
+                //var_dump((string)$e);
+            }
+        }
     }
     if( $idCatalogInv != -1 ){
         //Устанавливаем хуки
@@ -117,6 +212,47 @@ if (!isset($_GET['request']) && isset($_GET['code'])) {
                 ]);
         } catch (GuzzleHttp\Exception\GuzzleException $e) {
             //var_dump((string)$e);
+        }
+        //--------------------------------------------------------------------------------------------------------------
+        $findSystemNalog = false;
+        try {
+            $data = $provider->getHttpClient()
+                ->request('GET', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/custom_fields', [
+                    'headers' => $provider->getHeaders($accessToken)
+                ]);
+            $parsedBody = json_decode($data->getBody()->getContents(), true);
+            foreach ($parsedBody['_embedded']['custom_fields'] as $value) {
+                if( $value['name'] == 'Система налогооблажения' ){
+                    $findSystemNalog = true;
+                }
+            }
+        } catch (GuzzleHttp\Exception\GuzzleException $e) {
+            //var_dump((string)$e);
+        }
+        if( $findSystemNalog == false ){
+            try {
+                $dataw = array(
+                    "name" => "Система налогооблажения",
+                    "type" => "select",
+                    "code" => "SYS_NALOG_ECOM_KASSA",
+                    "sort" => "500",
+                    "enums"=> [
+                        ["value"=> "общая СН"],
+                        ["value"=> "упрощенная СН (доходы)"],
+                        ["value"=> "упрощенная СН(доходы минус расходы)"],
+                        ["value"=> "единый налог на вмененный доход"],
+                        ["value"=> "единый сельскохозяйственный налог"],
+                        ["value"=> "патентная СН"]
+                    ]
+                );
+                $data = $provider->getHttpClient()
+                    ->request('POST', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/custom_fields', [
+                        'headers' => $provider->getHeaders($accessToken),
+                        'form_params' => $dataw
+                    ]);
+            } catch (GuzzleHttp\Exception\GuzzleException $e) {
+                //var_dump((string)$e);
+            }
         }
     }
 }
