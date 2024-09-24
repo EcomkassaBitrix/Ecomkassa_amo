@@ -104,8 +104,8 @@ if (!isset($_GET['request']) && isset($_GET['code'])) {
                 ->request('GET', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogProd.'/custom_fields', [
                     'headers' => $provider->getHeaders($accessToken)
                 ]);
-            $parsedBody = json_decode($data->getBody()->getContents(), true);
-            foreach ($parsedBody['_embedded']['custom_fields'] as $value) {
+            $parsedBody2 = json_decode($data->getBody()->getContents(), true);
+            foreach ($parsedBody2['_embedded']['custom_fields'] as $value) {
                 if( $value['name'] == 'Признак способа расчета' ){
                     $findPriznakSposob = true;
                 }
@@ -239,8 +239,8 @@ if (!isset($_GET['request']) && isset($_GET['code'])) {
                 ->request('GET', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogInv.'/custom_fields', [
                     'headers' => $provider->getHeaders($accessToken)
                 ]);
-            $parsedBody = json_decode($data->getBody()->getContents(), true);
-            foreach ($parsedBody['_embedded']['custom_fields'] as $value) {
+            $parsedBody2 = json_decode($data->getBody()->getContents(), true);
+            foreach ($parsedBody2['_embedded']['custom_fields'] as $value) {
                 if( $value['name'] == 'Система налогооблажения' ){
                     $findSystemNalog = true;
                 }
