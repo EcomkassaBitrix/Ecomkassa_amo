@@ -174,6 +174,25 @@ if (!isset($_GET['request']) && isset($_GET['code'])) {
                 //var_dump((string)$e);
             }
         }
+        try {
+            $dataw = array(
+                "name" => "Всегда БЕЗ НДС",
+                "type" => "select",
+                "code" => "VSEGDA_BEZ_NDS_ECOM_KASSA",
+                "sort" => "500",
+                "enums"=> [
+                    ["value"=> "Да"],
+                    ["value"=> "Нет"]
+                ]
+            );
+            $data = $provider->getHttpClient()
+                ->request('POST', $provider->urlAccount() . 'api/v4/catalogs/'.$idCatalogProd.'/custom_fields', [
+                    'headers' => $provider->getHeaders($accessToken),
+                    'form_params' => $dataw
+                ]);
+        } catch (GuzzleHttp\Exception\GuzzleException $e) {
+            //var_dump((string)$e);
+        }
     }
     if( $idCatalogInv != -1 ){
         //Устанавливаем хуки

@@ -255,6 +255,7 @@
         foreach ($saleItemsGet as $valueItemPay) {
             $paymentObject = $payment_object;
             $paymentMethod = $paymentMethodDef;
+            $withoutNds = false;
             foreach ($saleProductGet['_embedded']['elements'] as $valueProduct) {
                 if( $valueProduct['id'] == $valueItemPay['value']['product_id'] ){
                     foreach ($valueProduct['custom_fields_values'] as $valueProductCustom) {
@@ -281,6 +282,9 @@
                             if( $valueProductCustom['values'][0]['value'] == "агентское вознаграждение" ){ $paymentObject = "agent_commission"; }
                             if( $valueProductCustom['values'][0]['value'] == "составной предмет расчета" ){ $paymentObject = "composite"; }
                             if( $valueProductCustom['values'][0]['value'] == "иной предмет расчета" ){ $paymentObject = "another"; }
+                        }
+                        if( $valueProductCustom['field_name'] == 'Всегда БЕЗ НДС' ){
+                            if( $valueProductCustom['values'][0]['value'] == "Да" ){ $withoutNds = true; }
                         }
                     }
                 }
@@ -312,6 +316,9 @@
             }
             if( $vatValueOrder != null ){
                 $valueVat = $vatValueOrder;
+            }
+            if( $withoutNds ){
+                $valueVat = "none";
             }
             $arrayObj = array(
                 "name" => $valueItemPay['value']['description'],
