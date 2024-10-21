@@ -67,7 +67,7 @@
                 <?php
                 foreach ($paysystem as $value) {
                     echo('
-                        <div class="alert alert-light hoverClass" role="alert" style="background-color: transparent;" onclick="SelectToPay('.$value['id'].')">
+                        <div class="alert alert-light hoverClass" role="alert" style="background-color: white;" onclick="SelectToPay('.$value['id'].')">
                             <img src="/img/'.$value['id'].'.png" style="width: 300px;" class="card-img-top" alt="...">
                         </div>
                     ');
