@@ -121,7 +121,6 @@ if( $user['id'] ){
                         if( !$linkDealPayment['id'] ){
                             //-------------------------------Обновление ссылки на оплату в самой сделке-----------------
                             $dataLink = array(
-                                "name" => "",
                                 "custom_fields_values" => [
                                     [
                                         "field_code"=> "URL_LEAD_ECOM_KASSA",
